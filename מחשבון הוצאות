@@ -1,0 +1,212 @@
+import React, { useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+const ExpenseCalculator = () => {
+  const [netSalary, setNetSalary] = useState('');
+  const [expenses, setExpenses] = useState({
+    electricity: '',    // חשמל
+    property_tax: '',   // ארנונה
+    groceries: '',      // קניות
+    clothes: '',        // בגדים
+    entertainment: '',  // בילויים
+    tv: '',            // טלוויזיה
+    internet: '',      // אינטרנט
+    phone: '',         // טלפון
+    mortgage: '',      // משכנתה
+    water_filter: '',  // תמי 4
+    kids_allowance: '', // דמי כיס לילדים
+    private_lessons: '', // שיעורים פרטיים
+    activities: '',     // חוגים
+    custom1: '',        // מותאם אישית 1
+    custom2: '',        // מותאם אישית 2
+    custom3: '',        // מותאם אישית 3
+    custom4: '',        // מותאם אישית 4
+    custom5: '',        // מותאם אישית 5
+  });
+
+  const [customLabels, setCustomLabels] = useState({
+    custom1: 'הוצאה נוספת 1',
+    custom2: 'הוצאה נוספת 2',
+    custom3: 'הוצאה נוספת 3',
+    custom4: 'הוצאה נוספת 4',
+    custom5: 'הוצאה נוספת 5',
+  });
+
+  const COLORS = [
+    '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8',
+    '#82ca9d', '#ffc658', '#ff7300', '#a4de6c', '#d0ed57',
+    '#83a6ed', '#8dd1e1', '#82ca9d', '#ff7c43', '#8884d8',
+    '#a4de6c', '#d0ed57', '#ffc658'
+  ];
+
+  const handleExpenseChange = (key, value) => {
+    setExpenses(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleCustomLabelChange = (key, value) => {
+    setCustomLabels(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const calculateTotal = () => {
+    return Object.values(expenses).reduce((sum, value) => {
+      const num = parseFloat(value) || 0;
+      return sum + num;
+    }, 0);
+  };
+
+  const getChartData = () => {
+    const data = [];
+    const hebrewLabels = {
+      electricity: 'חשמל',
+      property_tax: 'ארנונה',
+      groceries: 'קניות',
+      clothes: 'בגדים',
+      entertainment: 'בילויים',
+      tv: 'טלוויזיה',
+      internet: 'אינטרנט',
+      phone: 'טלפון',
+      mortgage: 'משכנתה',
+      water_filter: 'תמי 4',
+      kids_allowance: 'דמי כיס לילדים',
+      private_lessons: 'שיעורים פרטיים',
+      activities: 'חוגים',
+    };
+
+    Object.entries(expenses).forEach(([key, value]) => {
+      const amount = parseFloat(value) || 0;
+      if (amount > 0) {
+        const name = key.startsWith('custom') 
+          ? customLabels[key]
+          : hebrewLabels[key];
+        data.push({
+          name,
+          value: amount
+        });
+      }
+    });
+
+    const total = calculateTotal();
+    const remaining = parseFloat(netSalary) - total;
+    if (remaining > 0) {
+      data.push({
+        name: 'נשאר',
+        value: remaining
+      });
+    }
+
+    return data;
+  };
+
+  return (
+    <Card className="w-full max-w-4xl mx-auto rtl">
+      <CardHeader>
+        <CardTitle className="text-right text-2xl mb-4">מחשבון הוצאות משפחתיות</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-right mb-2">שכר נטו חודשי</label>
+              <input
+                type="number"
+                value={netSalary}
+                onChange={(e) => setNetSalary(e.target.value)}
+                className="w-full p-2 border rounded text-right"
+                placeholder="הכנס שכר נטו"
+              />
+            </div>
+            
+            {Object.entries(expenses).map(([key, value]) => (
+              <div key={key}>
+                {key.startsWith('custom') ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={value}
+                      onChange={(e) => handleExpenseChange(key, e.target.value)}
+                      className="w-1/2 p-2 border rounded text-right"
+                      placeholder="סכום"
+                    />
+                    <input
+                      type="text"
+                      value={customLabels[key]}
+                      onChange={(e) => handleCustomLabelChange(key, e.target.value)}
+                      className="w-1/2 p-2 border rounded text-right"
+                      placeholder="שם ההוצאה"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-right mb-2">
+                      {key === 'electricity' && 'חשמל'}
+                      {key === 'property_tax' && 'ארנונה'}
+                      {key === 'groceries' && 'קניות'}
+                      {key === 'clothes' && 'בגדים'}
+                      {key === 'entertainment' && 'בילויים'}
+                      {key === 'tv' && 'טלוויזיה'}
+                      {key === 'internet' && 'אינטרנט'}
+                      {key === 'phone' && 'טלפון'}
+                      {key === 'mortgage' && 'משכנתה'}
+                      {key === 'water_filter' && 'תמי 4'}
+                      {key === 'kids_allowance' && 'דמי כיס לילדים'}
+                      {key === 'private_lessons' && 'שיעורים פרטיים'}
+                      {key === 'activities' && 'חוגים'}
+                    </label>
+                    <input
+                      type="number"
+                      value={value}
+                      onChange={(e) => handleExpenseChange(key, e.target.value)}
+                      className="w-full p-2 border rounded text-right"
+                      placeholder="הכנס סכום"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={getChartData()}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label={({name, value}) => `${name}: ₪${value}`}
+                >
+                  {getChartData().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend layout="vertical" align="right" verticalAlign="middle" />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="mt-4 text-right">
+          <p className="text-lg font-bold">
+            סה"כ הוצאות: ₪{calculateTotal()}
+          </p>
+          <p className="text-lg font-bold">
+            נשאר: ₪{(parseFloat(netSalary) || 0) - calculateTotal()}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default ExpenseCalculator;
